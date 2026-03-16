@@ -36,6 +36,32 @@ input {
   color: #b91c1c;
 }
 
+.hint {
+  color: #4b5563;
+}
+
 ul {
-  padding-left: 1.25rem;
+  list-style: none;
+  padding-left: 0;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.doc-button {
+  width: 100%;
+  text-align: left;
+  background: #ffffff;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  padding: 0.55rem 0.75rem;
+  cursor: pointer;
+}
+
+.doc-button:hover {
+  background: #f1f5f9;
+}
+
+.doc-button.selected {
+  border-color: #2563eb;
+  background: #dbeafe;
 }

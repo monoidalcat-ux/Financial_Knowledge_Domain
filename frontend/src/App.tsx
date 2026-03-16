@@ -104,6 +104,7 @@ export default function App() {
   const [selectorInput, setSelectorInput] = useState<string>("");
   const [error, setError] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(true);
+  const [selectedDocument, setSelectedDocument] = useState<string>("");
 
   useEffect(() => {
     async function loadCsv() {
@@ -216,6 +217,17 @@ export default function App() {
       .filter((name) => name.length > 0);
   }, [rows, selectedCounterparty]);
 
+  useEffect(() => {
+    if (documents.length === 0) {
+      setSelectedDocument("");
+      return;
+    }
+
+    if (!documents.includes(selectedDocument)) {
+      setSelectedDocument(documents[0]);
+    }
+  }, [documents, selectedDocument]);
+
   return (
     <main className="container">
       <h1>Counterparty Document Browser</h1>
@@ -250,11 +262,22 @@ export default function App() {
             ) : documents.length === 0 ? (
               <p>No documents found for this counterparty.</p>
             ) : (
+              <>
+                <p className="hint">Click a document button to select it for preview (coming next).</p>
               <ul>
                 {documents.map((docName) => (
-                  <li key={docName}>{docName}</li>
+                  <li key={docName}>
+                    <button
+                      type="button"
+                      className={docName === selectedDocument ? "doc-button selected" : "doc-button"}
+                      onClick={() => setSelectedDocument(docName)}
+                    >
+                      {docName}
+                    </button>
+                  </li>
                 ))}
               </ul>
+              </>
             )}
           </section>
         </>
