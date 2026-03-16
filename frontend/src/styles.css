@@ -1,0 +1,67 @@
+:root {
+  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  color: #1f2937;
+  background-color: #f8fafc;
+}
+
+body {
+  margin: 0;
+}
+
+.container {
+  max-width: 760px;
+  margin: 2.5rem auto;
+  padding: 0 1rem;
+}
+
+.subtitle {
+  color: #4b5563;
+  margin-top: -0.5rem;
+}
+
+label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+}
+
+input {
+  width: 100%;
+  max-width: 360px;
+  padding: 0.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.error {
+  color: #b91c1c;
+}
+
+.hint {
+  color: #4b5563;
+}
+
+ul {
+  list-style: none;
+  padding-left: 0;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.doc-button {
+  width: 100%;
+  text-align: left;
+  background: #ffffff;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  padding: 0.55rem 0.75rem;
+  cursor: pointer;
+}
+
+.doc-button:hover {
+  background: #f1f5f9;
+}
+
+.doc-button.selected {
+  border-color: #2563eb;
+  background: #dbeafe;
+}
