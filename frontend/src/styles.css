@@ -25,8 +25,7 @@ label {
   font-weight: 600;
 }
 
-input,
-select {
+input {
   width: 100%;
   max-width: 360px;
   padding: 0.5rem;

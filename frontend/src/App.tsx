@@ -81,10 +81,14 @@ function getCounterpartyKey(counterparty: Counterparty): string {
   return `${counterparty.cpId}::${counterparty.cpName}`;
 }
 
+function getCounterpartyLabel(counterparty: Counterparty): string {
+  return `${counterparty.cpId} — ${counterparty.cpName}`;
+}
+
 export default function App() {
   const [rows, setRows] = useState<CsvRow[]>([]);
   const [selectedCounterparty, setSelectedCounterparty] = useState<string>("");
-  const [searchTerm, setSearchTerm] = useState<string>("");
+  const [selectorInput, setSelectorInput] = useState<string>("");
   const [error, setError] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(true);
 
@@ -138,8 +142,16 @@ export default function App() {
     });
   }, [rows]);
 
+  const counterpartyKeyByLabel = useMemo(() => {
+    const map = new Map<string, string>();
+    counterparties.forEach((cp) => {
+      map.set(getCounterpartyLabel(cp), getCounterpartyKey(cp));
+    });
+    return map;
+  }, [counterparties]);
+
   const filteredCounterparties = useMemo(() => {
-    const normalizedTerm = searchTerm.trim().toLowerCase();
+    const normalizedTerm = selectorInput.trim().toLowerCase();
     if (!normalizedTerm) {
       return counterparties;
     }
@@ -149,27 +161,44 @@ export default function App() {
         cp.cpId.toLowerCase().includes(normalizedTerm) ||
         cp.cpName.toLowerCase().includes(normalizedTerm)
     );
-  }, [counterparties, searchTerm]);
+  }, [counterparties, selectorInput]);
 
   useEffect(() => {
     if (!selectedCounterparty && counterparties.length > 0) {
-      setSelectedCounterparty(getCounterpartyKey(counterparties[0]));
+      const first = counterparties[0];
+      setSelectedCounterparty(getCounterpartyKey(first));
+      setSelectorInput(getCounterpartyLabel(first));
     }
   }, [counterparties, selectedCounterparty]);
 
-  useEffect(() => {
-    if (!selectedCounterparty || filteredCounterparties.length === 0) {
+  function handleSelectorInputChange(value: string): void {
+    setSelectorInput(value);
+
+    const exactMatchKey = counterpartyKeyByLabel.get(value);
+    if (exactMatchKey) {
+      setSelectedCounterparty(exactMatchKey);
       return;
     }
 
-    const selectedStillVisible = filteredCounterparties.some(
-      (cp) => getCounterpartyKey(cp) === selectedCounterparty
+    const normalizedTerm = value.trim().toLowerCase();
+    if (!normalizedTerm) {
+      if (counterparties.length > 0) {
+        const first = counterparties[0];
+        setSelectedCounterparty(getCounterpartyKey(first));
+      }
+      return;
+    }
+
+    const firstMatch = counterparties.find(
+      (cp) =>
+        cp.cpId.toLowerCase().includes(normalizedTerm) ||
+        cp.cpName.toLowerCase().includes(normalizedTerm)
     );
 
-    if (!selectedStillVisible) {
-      setSelectedCounterparty(getCounterpartyKey(filteredCounterparties[0]));
+    if (firstMatch) {
+      setSelectedCounterparty(getCounterpartyKey(firstMatch));
     }
-  }, [filteredCounterparties, selectedCounterparty]);
+  }
 
   const documents = useMemo(() => {
     if (!selectedCounterparty) {
@@ -199,35 +228,21 @@ export default function App() {
 
       {!loading && !error && (
         <>
-          <label htmlFor="counterparty-search">Search counterparties (ID / Name)</label>
+          <label htmlFor="counterparty-selector">Counterparty (search + select)</label>
           <input
-            id="counterparty-search"
+            id="counterparty-selector"
             type="search"
-            value={searchTerm}
+            list="counterparty-options"
+            value={selectorInput}
             placeholder="Type counterparty ID or name"
-            onChange={(event) => setSearchTerm(event.target.value)}
+            onChange={(event) => handleSelectorInputChange(event.target.value)}
           />
-
-          <label htmlFor="counterparty-select">Select Counterparty (ID / Name)</label>
-          <select
-            id="counterparty-select"
-            value={selectedCounterparty}
-            onChange={(event) => setSelectedCounterparty(event.target.value)}
-            disabled={filteredCounterparties.length === 0}
-          >
-            {filteredCounterparties.length === 0 ? (
-              <option value="">No matching counterparties</option>
-            ) : (
-              filteredCounterparties.map((cp) => {
-                const optionValue = getCounterpartyKey(cp);
-                return (
-                  <option key={optionValue} value={optionValue}>
-                    {cp.cpId} — {cp.cpName}
-                  </option>
-                );
-              })
-            )}
-          </select>
+          <datalist id="counterparty-options">
+            {filteredCounterparties.map((cp) => {
+              const label = getCounterpartyLabel(cp);
+              return <option key={getCounterpartyKey(cp)} value={label} />;
+            })}
+          </datalist>
 
           <section>
             <h2>Documents</h2>
