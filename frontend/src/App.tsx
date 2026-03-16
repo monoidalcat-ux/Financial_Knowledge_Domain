@@ -77,9 +77,14 @@ function getDocName(row: CsvRow): string {
   );
 }
 
+function getCounterpartyKey(counterparty: Counterparty): string {
+  return `${counterparty.cpId}::${counterparty.cpName}`;
+}
+
 export default function App() {
   const [rows, setRows] = useState<CsvRow[]>([]);
   const [selectedCounterparty, setSelectedCounterparty] = useState<string>("");
+  const [searchTerm, setSearchTerm] = useState<string>("");
   const [error, setError] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(true);
 
@@ -133,12 +138,38 @@ export default function App() {
     });
   }, [rows]);
 
+  const filteredCounterparties = useMemo(() => {
+    const normalizedTerm = searchTerm.trim().toLowerCase();
+    if (!normalizedTerm) {
+      return counterparties;
+    }
+
+    return counterparties.filter(
+      (cp) =>
+        cp.cpId.toLowerCase().includes(normalizedTerm) ||
+        cp.cpName.toLowerCase().includes(normalizedTerm)
+    );
+  }, [counterparties, searchTerm]);
+
   useEffect(() => {
     if (!selectedCounterparty && counterparties.length > 0) {
-      const first = counterparties[0];
-      setSelectedCounterparty(`${first.cpId}::${first.cpName}`);
+      setSelectedCounterparty(getCounterpartyKey(counterparties[0]));
     }
   }, [counterparties, selectedCounterparty]);
+
+  useEffect(() => {
+    if (!selectedCounterparty || filteredCounterparties.length === 0) {
+      return;
+    }
+
+    const selectedStillVisible = filteredCounterparties.some(
+      (cp) => getCounterpartyKey(cp) === selectedCounterparty
+    );
+
+    if (!selectedStillVisible) {
+      setSelectedCounterparty(getCounterpartyKey(filteredCounterparties[0]));
+    }
+  }, [filteredCounterparties, selectedCounterparty]);
 
   const documents = useMemo(() => {
     if (!selectedCounterparty) {
@@ -168,25 +199,41 @@ export default function App() {
 
       {!loading && !error && (
         <>
+          <label htmlFor="counterparty-search">Search counterparties (ID / Name)</label>
+          <input
+            id="counterparty-search"
+            type="search"
+            value={searchTerm}
+            placeholder="Type counterparty ID or name"
+            onChange={(event) => setSearchTerm(event.target.value)}
+          />
+
           <label htmlFor="counterparty-select">Select Counterparty (ID / Name)</label>
           <select
             id="counterparty-select"
             value={selectedCounterparty}
             onChange={(event) => setSelectedCounterparty(event.target.value)}
+            disabled={filteredCounterparties.length === 0}
           >
-            {counterparties.map((cp) => {
-              const optionValue = `${cp.cpId}::${cp.cpName}`;
-              return (
-                <option key={optionValue} value={optionValue}>
-                  {cp.cpId} — {cp.cpName}
-                </option>
-              );
-            })}
+            {filteredCounterparties.length === 0 ? (
+              <option value="">No matching counterparties</option>
+            ) : (
+              filteredCounterparties.map((cp) => {
+                const optionValue = getCounterpartyKey(cp);
+                return (
+                  <option key={optionValue} value={optionValue}>
+                    {cp.cpId} — {cp.cpName}
+                  </option>
+                );
+              })
+            )}
           </select>
 
           <section>
             <h2>Documents</h2>
-            {documents.length === 0 ? (
+            {filteredCounterparties.length === 0 ? (
+              <p>No counterparties match your search.</p>
+            ) : documents.length === 0 ? (
               <p>No documents found for this counterparty.</p>
             ) : (
               <ul>
