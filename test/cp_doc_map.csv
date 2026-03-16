@@ -1,7 +1,7 @@
-cp_id,cp_name,doc_name
-CP001,Acme Capital,master_agreement.pdf
-CP001,Acme Capital,trade_confirmation_2024-01-11.pdf
-CP001,Acme Capital,credit_support_annex.pdf
-CP002,Blue Ridge Bank,onboarding_pack.pdf
-CP002,Blue Ridge Bank,annual_review_2023.pdf
-CP003,Cedar Holdings,exposure_report_q2.pdf
+cp_id,cp_name,doc_name,doc_index,source,
+CP001,Acme Capital,example1.pdf,PdfIndex00001,"./test/"
+CP001,Acme Capital,example2.pdf,PdfIndex00002,"./test/"
+CP001,Acme Capital,credit_support_annex.pdf,,
+CP002,Blue Ridge Bank,onboarding_pack.pdf,,
+CP002,Blue Ridge Bank,annual_review_2023.pdf,,
+CP003,Cedar Holdings,exposure_report_q2.pdf,,
