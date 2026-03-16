@@ -85,6 +85,19 @@ function getCounterpartyLabel(counterparty: Counterparty): string {
   return `${counterparty.cpId} — ${counterparty.cpName}`;
 }
 
+function matchesCounterparty(counterparty: Counterparty, term: string): boolean {
+  const normalizedTerm = term.trim().toLowerCase();
+  if (!normalizedTerm) {
+    return true;
+  }
+
+  return (
+    counterparty.cpId.toLowerCase().includes(normalizedTerm) ||
+    counterparty.cpName.toLowerCase().includes(normalizedTerm) ||
+    getCounterpartyLabel(counterparty).toLowerCase().includes(normalizedTerm)
+  );
+}
+
 export default function App() {
   const [rows, setRows] = useState<CsvRow[]>([]);
   const [selectedCounterparty, setSelectedCounterparty] = useState<string>("");
@@ -151,16 +164,7 @@ export default function App() {
   }, [counterparties]);
 
   const filteredCounterparties = useMemo(() => {
-    const normalizedTerm = selectorInput.trim().toLowerCase();
-    if (!normalizedTerm) {
-      return counterparties;
-    }
-
-    return counterparties.filter(
-      (cp) =>
-        cp.cpId.toLowerCase().includes(normalizedTerm) ||
-        cp.cpName.toLowerCase().includes(normalizedTerm)
-    );
+    return counterparties.filter((cp) => matchesCounterparty(cp, selectorInput));
   }, [counterparties, selectorInput]);
 
   useEffect(() => {
@@ -180,8 +184,7 @@ export default function App() {
       return;
     }
 
-    const normalizedTerm = value.trim().toLowerCase();
-    if (!normalizedTerm) {
+    if (!value.trim()) {
       if (counterparties.length > 0) {
         const first = counterparties[0];
         setSelectedCounterparty(getCounterpartyKey(first));
@@ -189,11 +192,7 @@ export default function App() {
       return;
     }
 
-    const firstMatch = counterparties.find(
-      (cp) =>
-        cp.cpId.toLowerCase().includes(normalizedTerm) ||
-        cp.cpName.toLowerCase().includes(normalizedTerm)
-    );
+    const firstMatch = counterparties.find((cp) => matchesCounterparty(cp, value));
 
     if (firstMatch) {
       setSelectedCounterparty(getCounterpartyKey(firstMatch));
